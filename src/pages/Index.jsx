@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Box, Button, FormControl, FormLabel, Input, Select, Radio, RadioGroup, Stack, Table, Thead, Tbody, Tr, Th, Td, IconButton, useDisclosure, Text } from "@chakra-ui/react";
 import TransactionModal from "../components/TransactionModal";
-import { FaPlus, FaEdit, FaTrash, FaFilter } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaFilter, FaDownload } from "react-icons/fa";
 
 const initialTransactions = [
   { id: 1, date: "2023-06-01", amount: 1000, type: "income", category: "Salary" },
@@ -96,6 +96,25 @@ const Index = () => {
     });
   };
 
+  const handleExport = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const filename = `transactions_${today}.json`;
+    downloadJSON(filteredTransactions, filename);
+  };
+
+  const downloadJSON = (data, filename) => {
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Box maxWidth="800px" margin="auto" p={4}>
       <Box bg={balance >= 0 ? "green.500" : "red.500"} p={4} mb={8} borderRadius="md">
@@ -109,9 +128,14 @@ const Index = () => {
         </Text>
       </Box>
       <TransactionModal isOpen={isOpen} onClose={onClose} onSubmit={addTransaction} />
-      <Button colorScheme="blue" leftIcon={<FaPlus />} onClick={onOpen} mb={4}>
-        Add Transaction
-      </Button>
+      <Stack direction="row" spacing={4} mb={4}>
+        <Button colorScheme="blue" leftIcon={<FaPlus />} onClick={onOpen}>
+          Add Transaction
+        </Button>
+        <Button colorScheme="green" leftIcon={<FaDownload />} onClick={handleExport}>
+          Export
+        </Button>
+      </Stack>
 
       <Box mt={8} mb={4}>
         <Stack direction="row" spacing={4} mb={4}>
