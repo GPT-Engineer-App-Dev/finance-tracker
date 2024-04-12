@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Box, Button, FormControl, FormLabel, Input, Select, Radio, RadioGroup, Stack, Table, Thead, Tbody, Tr, Th, Td, IconButton, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, Select, Radio, RadioGroup, Stack, Table, Thead, Tbody, Tr, Th, Td, IconButton, useDisclosure, Text } from "@chakra-ui/react";
 import TransactionModal from "../components/TransactionModal";
 import { FaPlus, FaEdit, FaTrash, FaFilter } from "react-icons/fa";
 
@@ -54,6 +54,21 @@ const Index = () => {
     return filtered;
   }, [transactions, filters]);
 
+  const calculateBalance = (transactions) => {
+    const income = transactions.filter((transaction) => transaction.type === "income").reduce((total, transaction) => total + transaction.amount, 0);
+    const expenses = transactions.filter((transaction) => transaction.type === "expense").reduce((total, transaction) => total + transaction.amount, 0);
+    return income - expenses;
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(amount);
+  };
+
+  const balance = useMemo(() => calculateBalance(filteredTransactions), [filteredTransactions]);
+
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
@@ -83,6 +98,16 @@ const Index = () => {
 
   return (
     <Box maxWidth="800px" margin="auto" p={4}>
+      <Box bg={balance >= 0 ? "green.500" : "red.500"} p={4} mb={8} borderRadius="md">
+        <Text fontSize="2xl" fontWeight="bold" color="white">
+          Balance: {formatCurrency(balance)}
+        </Text>
+      </Box>
+      <Box bg={balance >= 0 ? "green.500" : "red.500"} p={4} mb={8} borderRadius="md">
+        <Text fontSize="2xl" fontWeight="bold" color="white">
+          Balance: {formatCurrency(balance)}
+        </Text>
+      </Box>
       <TransactionModal isOpen={isOpen} onClose={onClose} onSubmit={addTransaction} />
       <Button colorScheme="blue" leftIcon={<FaPlus />} onClick={onOpen} mb={4}>
         Add Transaction
