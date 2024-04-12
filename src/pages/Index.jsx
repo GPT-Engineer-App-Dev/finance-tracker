@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Box, Button, FormControl, FormLabel, Input, Select, Radio, RadioGroup, Stack, Table, Thead, Tbody, Tr, Th, Td, IconButton } from "@chakra-ui/react";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaFilter } from "react-icons/fa";
 
 const initialTransactions = [
   { id: 1, date: "2023-06-01", amount: 1000, type: "income", category: "Salary" },
@@ -17,6 +17,42 @@ const Index = () => {
     type: "income",
     category: "",
   });
+  const [filters, setFilters] = useState({
+    type: "all",
+    category: "all",
+    fromDate: "",
+    toDate: "",
+  });
+
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(transactions.map((transaction) => transaction.category));
+    return ["all", ...uniqueCategories];
+  }, [transactions]);
+
+  const filteredTransactions = useMemo(() => {
+    let filtered = [...transactions];
+    if (filters.type !== "all") {
+      filtered = filtered.filter((transaction) => transaction.type === filters.type);
+    }
+    if (filters.category !== "all") {
+      filtered = filtered.filter((transaction) => transaction.category === filters.category);
+    }
+    if (filters.fromDate) {
+      filtered = filtered.filter((transaction) => transaction.date >= filters.fromDate);
+    }
+    if (filters.toDate) {
+      filtered = filtered.filter((transaction) => transaction.date <= filters.toDate);
+    }
+    return filtered;
+  }, [transactions, filters]);
+
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
+
+  const handleFilter = () => {
+    setTransactions([...transactions]);
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -89,7 +125,43 @@ const Index = () => {
         </Button>
       </form>
 
-      <Table mt={8}>
+      <Box mt={8} mb={4}>
+        <Stack direction="row" spacing={4} mb={4}>
+          <FormControl>
+            <FormLabel>Type</FormLabel>
+            <RadioGroup name="type" value={filters.type} onChange={handleFilterChange}>
+              <Stack direction="row">
+                <Radio value="all">All</Radio>
+                <Radio value="income">Income</Radio>
+                <Radio value="expense">Expense</Radio>
+              </Stack>
+            </RadioGroup>
+          </FormControl>
+          <FormControl>
+            <FormLabel>Category</FormLabel>
+            <Select name="category" value={filters.category} onChange={handleFilterChange}>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl>
+            <FormLabel>From Date</FormLabel>
+            <Input type="date" name="fromDate" value={filters.fromDate} onChange={handleFilterChange} />
+          </FormControl>
+          <FormControl>
+            <FormLabel>To Date</FormLabel>
+            <Input type="date" name="toDate" value={filters.toDate} onChange={handleFilterChange} />
+          </FormControl>
+          <Button colorScheme="blue" leftIcon={<FaFilter />} onClick={handleFilter}>
+            Filter
+          </Button>
+        </Stack>
+      </Box>
+
+      <Table>
         <Thead>
           <Tr>
             <Th>Date</Th>
@@ -100,7 +172,7 @@ const Index = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {transactions.map((transaction) => (
+          {filteredTransactions.map((transaction) => (
             <Tr key={transaction.id}>
               <Td>{transaction.date}</Td>
               <Td>{transaction.amount}</Td>
