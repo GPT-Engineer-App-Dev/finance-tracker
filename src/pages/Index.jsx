@@ -122,11 +122,6 @@ const Index = () => {
           Balance: {formatCurrency(balance)}
         </Text>
       </Box>
-      <Box bg={balance >= 0 ? "green.500" : "red.500"} p={4} mb={8} borderRadius="md">
-        <Text fontSize="2xl" fontWeight="bold" color="white">
-          Balance: {formatCurrency(balance)}
-        </Text>
-      </Box>
       <TransactionModal isOpen={isOpen} onClose={onClose} onSubmit={addTransaction} />
       <Stack direction="row" spacing={4} mb={4}>
         <Button colorScheme="blue" leftIcon={<FaPlus />} onClick={onOpen}>
