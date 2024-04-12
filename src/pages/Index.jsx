@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { Box, Button, FormControl, FormLabel, Input, Select, Radio, RadioGroup, Stack, Table, Thead, Tbody, Tr, Th, Td, IconButton } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, Select, Radio, RadioGroup, Stack, Table, Thead, Tbody, Tr, Th, Td, IconButton, useDisclosure } from "@chakra-ui/react";
+import TransactionModal from "../components/TransactionModal";
 import { FaPlus, FaEdit, FaTrash, FaFilter } from "react-icons/fa";
 
 const initialTransactions = [
@@ -10,7 +11,14 @@ const initialTransactions = [
 
 const Index = () => {
   const [transactions, setTransactions] = useState(initialTransactions);
-  const [formData, setFormData] = useState({
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const addTransaction = (transaction) => {
+    const newTransaction = { ...transaction, id: Date.now() };
+    setTransactions([...transactions, newTransaction]);
+  };
+
+  const [editFormData, setEditFormData] = useState({
     id: null,
     date: "",
     amount: "",
@@ -54,26 +62,8 @@ const Index = () => {
     setTransactions([...transactions]);
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (formData.id) {
-      // Update existing transaction
-      const updatedTransactions = transactions.map((transaction) => (transaction.id === formData.id ? formData : transaction));
-      setTransactions(updatedTransactions);
-    } else {
-      // Add new transaction
-      const newTransaction = { ...formData, id: Date.now() };
-      setTransactions([...transactions, newTransaction]);
-    }
-    resetForm();
-  };
-
   const handleEdit = (transaction) => {
-    setFormData(transaction);
+    setEditFormData(transaction);
   };
 
   const handleDelete = (id) => {
@@ -81,8 +71,8 @@ const Index = () => {
     setTransactions(updatedTransactions);
   };
 
-  const resetForm = () => {
-    setFormData({
+  const resetEditForm = () => {
+    setEditFormData({
       id: null,
       date: "",
       amount: "",
@@ -93,37 +83,10 @@ const Index = () => {
 
   return (
     <Box maxWidth="800px" margin="auto" p={4}>
-      <form onSubmit={handleSubmit}>
-        <FormControl mb={4}>
-          <FormLabel>Date</FormLabel>
-          <Input type="date" name="date" value={formData.date} onChange={handleChange} required />
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Amount</FormLabel>
-          <Input type="number" name="amount" value={formData.amount} onChange={handleChange} required />
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Type</FormLabel>
-          <RadioGroup name="type" value={formData.type} onChange={(value) => setFormData({ ...formData, type: value })}>
-            <Stack direction="row">
-              <Radio value="income">Income</Radio>
-              <Radio value="expense">Expense</Radio>
-            </Stack>
-          </RadioGroup>
-        </FormControl>
-        <FormControl mb={4}>
-          <FormLabel>Category</FormLabel>
-          <Select name="category" value={formData.category} onChange={handleChange} required>
-            <option value="">Select category</option>
-            <option value="Groceries">Groceries</option>
-            <option value="Bills">Bills</option>
-            <option value="Salary">Salary</option>
-          </Select>
-        </FormControl>
-        <Button type="submit" colorScheme="blue" leftIcon={<FaPlus />}>
-          {formData.id ? "Update" : "Add"}
-        </Button>
-      </form>
+      <TransactionModal isOpen={isOpen} onClose={onClose} onSubmit={addTransaction} />
+      <Button colorScheme="blue" leftIcon={<FaPlus />} onClick={onOpen} mb={4}>
+        Add Transaction
+      </Button>
 
       <Box mt={8} mb={4}>
         <Stack direction="row" spacing={4} mb={4}>
